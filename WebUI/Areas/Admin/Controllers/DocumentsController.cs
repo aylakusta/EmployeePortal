@@ -56,7 +56,15 @@ namespace WebUI.Areas.Admin.Controllers
                 .FirstOrDefaultAsync(r => r.Id == id);
 
             if (req == null) return NotFound();
-            return View("Request", req);
+
+            var viewPath = req.Type switch
+            {
+                DocumentRequestType.MedicalReport => "~/Views/Documents/RequestReport.cshtml",
+                DocumentRequestType.AnnualLeave => "~/Views/Documents/RequestLeave.cshtml",
+                _ => "~/Views/Documents/RequestLeave.cshtml"
+            };
+
+            return View(viewPath, req);
         }
     }
 }

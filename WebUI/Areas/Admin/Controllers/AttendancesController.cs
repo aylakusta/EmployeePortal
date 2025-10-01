@@ -75,7 +75,7 @@ namespace WebUI.Areas.Admin.Controllers
             _ctx.DocumentRequests.Add(req);
             await _ctx.SaveChangesAsync();
 
-            return RedirectToAction("Request", "Documents", new { id = req.Id });
+            return RedirectToAction(nameof(DocumentsController.GetRequest), "Documents", new { area = "Admin", id = req.Id });
         }
 
         [HttpGet]
