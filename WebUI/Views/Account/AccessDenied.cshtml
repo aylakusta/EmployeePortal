@@ -1,0 +1,17 @@
+@{
+    Layout="_AuthLayout";
+    ViewData["Title"] = "Erişim Reddedildi";
+}
+<div class="row justify-content-center">
+  <div class="col-md-7">
+    <div class="alert alert-danger shadow-sm">
+      <h5 class="alert-heading mb-2">Yetkiniz yok</h5>
+      <p>Bu sayfaya erişmek için gerekli yetkiye sahip değilsiniz.</p>
+      <hr />
+      <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Anasayfa</a>
+        <a class="btn btn-secondary" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@(ViewData["ReturnUrl"] ?? "/")">Admin olarak giriş yap</a>
+      </div>
+    </div>
+  </div>
+</div>

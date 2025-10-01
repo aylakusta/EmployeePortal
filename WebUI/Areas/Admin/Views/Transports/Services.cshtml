@@ -1,0 +1,163 @@
+@using WebUI.Models
+@model IEnumerable<Service>
+@{
+    ViewData["Title"] = "Servisler";
+}
+
+@if (TempData["Ok"] != null)
+{
+    <div class="alert alert-success">@TempData["Ok"]</div>
+}
+@if (TempData["Warn"] != null)
+{
+    <div class="alert alert-warning">@TempData["Warn"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <a asp-area="Admin" asp-action="Create" class="btn btn-primary">
+                <i class="bi fa-van-shuttle"></i> Servis Ekle</a>
+            <a asp-area="Admin" asp-action="Assign" class="btn btn-success">
+                <i class="bi fa-calendar-check"></i> Yeni Atama</a>
+        </div>
+
+        <div class="btn-group">
+            <button type="button" id="expandAll" class="btn btn-outline-secondary btn-sm">Tümünü Aç</button>
+            <button type="button" id="collapseAll" class="btn btn-outline-secondary btn-sm">Tümünü Kapat</button>
+        </div>
+    </div>
+</div>
+
+@foreach (var s in Model)
+{
+    var activeList = (s.Assignments ?? new List<ServiceAssignment>())
+    .Where(x => x.IsActive)
+    .OrderBy(x => x.Employee!.FirstName).ThenBy(x => x.Employee!.LastName)
+    .ToList();
+
+    var activeCount = activeList.Count;
+    var collapseId = $"svc_{s.Id}";
+    var full = activeCount >= s.SeatCount;
+
+    <div class="card mb-3 shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-link text-decoration-none p-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#@collapseId" aria-expanded="false" aria-controls="@collapseId">
+                    <strong>@s.Name</strong>
+                    <small class="text-muted">(@s.StartPoint → @s.EndPoint)</small>
+                </button>
+                <span class="badge @(full ? "bg-danger" : "bg-info")">@activeCount/@s.SeatCount</span>
+            </div>
+
+            <div class="d-flex gap-2">
+                @if (!full)
+                {
+                    <a asp-action="Assign" asp-route-serviceId="@s.Id" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Ata
+                    </a>
+                }
+                else
+                {
+                    <span class="badge bg-danger align-self-center">DOLU</span>
+                }
+                <a asp-action="Transfer" asp-route-fromServiceId="@s.Id" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left-right"></i> Transfer
+                </a>
+                <a asp-action="Edit" asp-route-id="@s.Id" class="btn btn-sm btn-outline-dark">
+                    <i class="bi bi-pencil"></i> Düzenle
+                </a>
+            </div>
+        </div>
+
+        <div id="@collapseId" class="collapse svc-collapse">
+            <div class="card-body">
+                <form method="post" asp-action="BulkUnassign">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="serviceId" value="@s.Id" />
+
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width:32px;">
+                                        <input class="form-check-input" type="checkbox"
+                                            onclick="document.querySelectorAll('.sel-@s.Id').forEach(cb=>cb.checked=this.checked)">
+                                    </th>
+                                    <th>Personel</th>
+                                    <th>E-posta</th>
+                                    <th class="text-end">İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (activeList.Any())
+                                {
+                                    foreach (var a in activeList)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-check-input sel-@s.Id" name="selectedIds"
+                                                    id="cb_@a.Id" value="@a.Id" />
+                                            </td>
+                                            <td>@a.Employee!.FirstName @a.Employee!.LastName</td>
+                                            <td>@a.Employee!.Email</td>
+                                            <td class="text-end">
+                                                <a href="#" class="btn btn-outline-danger btn-sm"
+                                                    onclick="event.preventDefault(); const f=this.closest('form'); f.querySelectorAll('.sel-@s.Id').forEach(cb=>cb.checked=false); document.getElementById('cb_@a.Id').checked=true; if(confirm('Bu atama kaldırılsın mı?')) f.submit();">
+                                                    <i class="bi bi-person-dash"></i> Kaldır
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-muted">Aktif atama yok.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                onclick="document.querySelectorAll('.sel-@s.Id').forEach(cb=>cb.checked=this.checked)">
+                            <label class="form-check-label">Tümünü Seç</label>
+                        </div>
+                        <button class="btn btn-sm btn-danger" type="submit"
+                            onclick="return confirm('Seçili atamalar kaldırılsın mı?')">
+                            <i class="bi bi-x-circle"></i> Seçili Kaldır
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Tümünü Aç/Kapat (Bootstrap Collapse API)
+        (function () {
+            const expandBtn = document.getElementById('expandAll');
+            const collapseBtn = document.getElementById('collapseAll');
+            const panels = document.querySelectorAll('.svc-collapse');
+
+            function setAll(open) {
+                panels.forEach(el => {
+                    const c = bootstrap.Collapse.getOrCreateInstance(el, { toggle: false });
+                    open ? c.show() : c.hide();
+                });
+            }
+            if (expandBtn) expandBtn.addEventListener('click', () => setAll(true));
+            if (collapseBtn) collapseBtn.addEventListener('click', () => setAll(false));
+        })();
+    </script>
+}

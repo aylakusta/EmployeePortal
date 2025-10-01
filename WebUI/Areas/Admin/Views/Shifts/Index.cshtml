@@ -1,0 +1,34 @@
+@model IEnumerable<WebUI.Models.Shift>
+@{
+    ViewData["Title"] = "Shifts (Admin)";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3></h3>
+  <a class="btn btn-primary" asp-action="Create">+ Yeni</a>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <table class="table table-striped table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>Tarih</th>
+          <th>Başlangıç</th>
+          <th>Bitiş</th>
+          <th>Türü</th>
+        </tr>
+      </thead>
+      <tbody>
+      @foreach (var s in Model)
+      {
+        <tr>
+          <td>@s.Date.ToString("dd.MM.yyyy")</td>
+          <td>@(s.StartTime?.ToString(@"hh\:mm"))</td>
+          <td>@(s.EndTime?.ToString(@"hh\:mm"))</td>
+          <td>@s.ShiftType</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+</div>

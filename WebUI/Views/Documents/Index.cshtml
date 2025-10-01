@@ -1,0 +1,72 @@
+@model IEnumerable<WebUI.Models.DocumentRequest>
+@using WebUI.Models
+@{
+    ViewData["Title"] = "Evrak Taleplerim";
+    DocumentRequestType? pickedType = ViewBag.Type as DocumentRequestType?;
+    string status = ViewBag.Status as string ?? "all";
+}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h3 class="mb-0">@ViewData["Title"]</h3>
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <select name="type" class="form-select">
+        <option value="">Tür (Tümü)</option>
+        <option value="MedicalReport" selected="@(pickedType==DocumentRequestType.MedicalReport? "selected" : null)">Rapor</option>
+        <option value="AnnualLeave"  selected="@(pickedType==DocumentRequestType.AnnualLeave? "selected" : null)">Yıllık İzin</option>
+      </select>
+      <select name="status" class="form-select">
+        <option value="all" selected="@(status=="all"?"selected":null)">Durum (Tümü)</option>
+        <option value="incomplete" selected="@(status=="incomplete"?"selected":null)">Eksik</option>
+        <option value="completed" selected="@(status=="completed"?"selected":null)">Tamamlandı</option>
+      </select>
+      <button class="btn btn-outline-primary">Filtrele</button>
+    </form>
+  </div>
+
+  <div class="card-body">
+    @if (TempData["Error"] is string err && !string.IsNullOrWhiteSpace(err))
+    {
+      <div class="alert alert-danger">@err</div>
+    }
+
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Oluşturma</th>
+            <th>Tür</th>
+            <th>Tarih Aralığı</th>
+            <th>Dosya</th>
+            <th>Durum</th>
+            <th style="width:160px;"></th>
+          </tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            var typeLabel = r.Type == DocumentRequestType.MedicalReport ? "Rapor" : "Yıllık İzin";
+            <tr>
+              <td>@r.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+              <td>@typeLabel</td>
+              <td>
+                @if (r.StartDate.HasValue || r.EndDate.HasValue)
+                { <text>@(r.StartDate?.ToString("dd.MM.yyyy") ?? "—") - @(r.EndDate?.ToString("dd.MM.yyyy") ?? "—")</text> }
+                else { <span class="text-muted">—</span> }
+              </td>
+              <td>@(string.IsNullOrWhiteSpace(r.UploadedFileName) ? "—" : r.UploadedFileName)</td>
+              <td>
+                @if (r.CompletedAt != null) { <span class="badge bg-success">Tamamlandı</span> }
+                else { <span class="badge bg-warning text-dark">Eksik</span> }
+              </td>
+              <td class="text-nowrap">
+                <a asp-action="ViewRequest" asp-route-id="@r.Id" class="btn btn-sm btn-outline-primary">
+                  @(r.CompletedAt == null ? "Devam et" : "Görüntüle")
+                </a>
+              </td>
+            </tr>
+        }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

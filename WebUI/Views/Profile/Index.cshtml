@@ -1,0 +1,96 @@
+@model WebUI.Controllers.ProfileVm
+@{
+    ViewData["Title"] = "Hesabım";
+}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Profil Bilgileri</h5>
+      </div>
+      <div class="card-body">
+        @if (TempData["Success"] is string msg)
+        {
+          <div class="alert alert-success">@msg</div>
+        }
+
+        <form method="post" asp-action="Index" class="row g-3">
+          @Html.AntiForgeryToken()
+          <div asp-validation-summary="All" class="text-danger"></div>
+
+          <div class="col-md-6">
+            <label class="form-label">Ad</label>
+            <input class="form-control" value="@Model.FirstName" disabled />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Soyad</label>
+            <input class="form-control" value="@Model.LastName" disabled />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Departman</label>
+            <input class="form-control" value="@Model.Department" disabled />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Kategori</label>
+            <input class="form-control" value="@Model.Category" disabled />
+          </div>
+
+          <div class="col-md-6">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+            <!--small class="text-muted">E-posta değişince giriş bilgileriniz de güncellenir.</small-->
+          </div>
+
+          <div class="col-md-6">
+            <label asp-for="PhoneNumber" class="form-label"></label>
+            <input asp-for="PhoneNumber" class="form-control" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+          </div>
+
+          <div class="col-12">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-header">
+        <h5 class="mb-0">Parola Değiştir</h5>
+      </div>
+      <div class="card-body">
+        <form method="post" asp-action="ChangePassword" class="row g-3">
+          @Html.AntiForgeryToken()
+          <div asp-validation-summary="All" class="text-danger"></div>
+
+          <div class="col-12">
+            <label for="CurrentPassword" class="form-label">Mevcut Parola</label> <small class="text-muted">(Hiç parolanız yoksa bu alanı boş bırakın.)</small>
+            <input type="password" name="CurrentPassword" id="CurrentPassword" class="form-control" />
+            
+          </div>
+
+          <div class="col-12">
+            <label for="NewPassword" class="form-label">Yeni Parola</label>
+            <input type="password" name="NewPassword" id="NewPassword" class="form-control" />
+          </div>
+
+          <div class="col-12">
+            <label for="ConfirmPassword" class="form-label">Yeni Parola (Tekrar)</label>
+            <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="form-control" />
+          </div>
+
+          <div class="col-12">
+            <button class="btn btn-outline-primary">Parolayı Güncelle</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

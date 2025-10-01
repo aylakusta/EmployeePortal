@@ -1,0 +1,42 @@
+@model WebUI.Models.Menu
+@{
+    ViewData["Title"] = "Yeni Menü";
+}
+
+<h2 class="mb-3">@ViewData["Title"]</h2>
+
+<form asp-area="Admin" asp-controller="Menus" asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Url" class="form-label"></label>
+        <input asp-for="Url" class="form-control" />
+        <span asp-validation-for="Url" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Order" class="form-label"></label>
+        <input asp-for="Order" class="form-control" type="number" />
+        <span asp-validation-for="Order" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tarih</label>
+        <input class="form-control" type="datetime-local"
+               name="Date"
+               value="@(Model?.Date.ToLocalTime().ToString("yyyy-MM-ddTHH:mm") ?? DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))" />
+        <small class="text-muted d-block">Boş bırakırsanız şimdiki zaman kaydedilir.</small>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-area="Admin" asp-controller="Menus" asp-action="Index" class="btn btn-link">Listeye dön</a>
+</form>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+}

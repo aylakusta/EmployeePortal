@@ -1,0 +1,26 @@
+@model WebUI.Models.Attendance
+@{
+    ViewData["Title"] = "Delete Attendance";
+}
+
+<h2>Delete Attendance</h2>
+
+<h4>Silmek istediğinize emin misiniz?</h4>
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">UserId</dt>
+        <dd class="col-sm-10">@Model.UserId</dd>
+
+        <dt class="col-sm-2">Date</dt>
+        <dd class="col-sm-10">@Model.CreatedAt.ToShortDateString()</dd>
+
+        <dt class="col-sm-2">Present</dt>
+        <dd class="col-sm-10">@Model.Description</dd>
+    </dl>
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>

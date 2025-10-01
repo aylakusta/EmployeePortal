@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = ViewData["Title"] ?? "Servis Kullanimi";
+    var reason = ViewBag.Reason as string ?? string.Empty;
+    var message = reason == "missing"
+        ? "Hesabinizla eslesen bir personel kaydi bulunamadigindan servis ekrani kullanima kapali. Lutfen IK ile iletisime gecin."
+        : "Hesabiniz icin servis kullanimi etkin degil. Eger servis hizmetine ihtiyaciniz varsa IK ile iletisime gecin.";
+}
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h3 class="card-title mb-3">Servis kullanimi aktif degil</h3>
+    <p class="card-text">@message</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Ana sayfaya don</a>
+  </div>
+</div>

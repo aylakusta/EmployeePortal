@@ -1,0 +1,256 @@
+@model WebUI.Areas.Admin.ViewModels.BulkUploadVm
+@{
+    ViewData["Title"] = "Toplu Personel Ekle";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success"><i class="bi bi-check2-circle"></i> @Html.Raw(TempData["Success"])</div>
+}
+@if (TempData["Warn"] != null)
+{
+    <div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> @Html.Raw(TempData["Warn"])</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger"><i class="bi bi-x-octagon"></i> @Html.Raw(TempData["Error"])</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Toplu Personel Ekle</h3>
+    <a asp-area="Admin" asp-controller="Employees" asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Geri
+    </a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>CSV / XLSX Yükle</strong>
+            </div>
+            <div class="card-body">
+                <!-- YÖNLENDİRME: BulkUploadController.Index -->
+                <form asp-area="Admin" asp-controller="BulkUpload" asp-action="Index" method="post" enctype="multipart/form-data" id="uploadForm">
+                    @Html.AntiForgeryToken()
+
+                    <div id="dropZone" class="border border-2 border-dashed rounded-3 p-4 mb-2 text-center">
+                        <div class="mb-2">
+                            <i class="bi bi-file-earmark-spreadsheet" style="font-size:40px;"></i>
+                        </div>
+                        <div class="mb-2 fw-semibold">Dosyanızı buraya sürükleyip bırakın</div>
+                        <div class="text-muted mb-2">veya</div>
+
+                        <!-- Input'u label'ın DIŞINA aldık; label for ile tetikliyor -->
+                        <input asp-for="CsvFile"
+                               type="file"
+                               id="csvInput"
+                               class="d-none"
+                               accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                               required />
+
+                        <label class="btn btn-outline-primary" for="csvInput">
+                            Dosya Seç (CSV / XLSX)
+                        </label>
+
+                        <div id="fileInfo" class="mt-2 text-muted"></div>
+                    </div>
+
+                    <!-- Sunucu validasyonu burada görünsün -->
+                    <div class="text-danger mb-2" asp-validation-for="CsvFile"></div>
+
+                    <div class="small text-muted mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>.csv</strong> veya <strong>.xlsx</strong> dosyaları yükleyebilirsiniz.
+                    </div>
+
+                    <!-- Yeni özellik seçenekleri -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="AutoCreateDepartments" />
+                                <label class="form-check-label" asp-for="AutoCreateDepartments">
+                                    Departman bulunamazsa <strong>otomatik oluştur</strong>
+                                </label>
+                            </div>
+                            <small class="text-muted">Kapalıysa satır <u>atlanmaz</u>; departman boş kalır ve uyarı verilir.</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="AutoCreateJobTitles" />
+                                <label class="form-check-label" asp-for="AutoCreateJobTitles">
+                                    Unvan bulunamazsa <strong>otomatik oluştur</strong>
+                                </label>
+                            </div>
+                            <small class="text-muted">Kapalıysa satır <u>atlanmaz</u>; unvan boş kalır ve uyarı verilir.</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check">
+                                <input class="form-check-input" asp-for="SkipIfEmailExists" />
+                                <label class="form-check-label" asp-for="SkipIfEmailExists">
+                                    E-posta mevcutsa <strong>atla</strong> (önerilir)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-upload"></i> Yükle ve Ekle
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <strong>Örnek Şablon</strong>
+            </div>
+            <div class="card-body">
+                <p class="mb-2 d-flex flex-wrap gap-2 align-items-center">
+                    Hazır şablonu indirip doldurabilirsiniz:
+                    <a asp-area="Admin" asp-controller="Employees" asp-action="DownloadTemplate" class="btn btn-sm btn-outline-dark">
+                        <i class="bi bi-download"></i> CSV Şablonu İndir
+                    </a>
+                    <a asp-area="Admin" asp-controller="BulkUpload" asp-action="TemplateXlsx" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-download"></i> XLSX Şablonu İndir
+                    </a>
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>FirstName</th>
+                                <th>LastName</th>
+                                <th>Email</th>
+                                <th>Department</th>
+                                <th>JobTitle</th>
+                                <th>Category</th>
+                                <th>UsesTransport</th>
+                                <th>HasCompanyCar</th>
+                                <th>DefaultShift</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Ayşe</td>
+                                <td>Yılmaz</td>
+                                <td>ayse@example.com</td>
+                                <td>Satış</td>
+                                <td>Uzman</td>
+                                <td>Beyaz</td>
+                                <td>1</td>
+                                <td>0</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>Mehmet</td>
+                                <td>Demir</td>
+                                <td>mehmet@example.com</td>
+                                <td>Üretim</td>
+                                <td>Operatör</td>
+                                <td>Mavi</td>
+                                <td>1</td>
+                                <td>0</td>
+                                <td>2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="small text-muted mt-2">
+                    İlk satır başlık (header) olabilir. Kod, ilk satırda <code>FirstName</code> geçiyorsa başlığı atlar.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Kolon Açıklamaları</strong>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>FirstName</strong> (zorunlu): Ad.</li>
+                    <li><strong>LastName</strong> (zorunlu): Soyad.</li>
+                    <li><strong>Email</strong> (zorunlu): E-posta. Her personel için kullanıcı oluşturulur ve (mümkünse) e-posta gönderilir.</li>
+                    <li><strong>Department</strong> (önerilir): Departman adı. Eşleşmezse ve otomatik oluştur kapalıysa boş kalır.</li>
+                    <li><strong>JobTitle</strong> (opsiyonel): Unvan adı. Eşleşmezse ve otomatik oluştur kapalıysa boş kalır.</li>
+                    <li><strong>Category</strong> (zorunlu): “<code>Beyaz</code>” veya “<code>Mavi</code>”.</li>
+                    <li><strong>UsesTransport</strong>: Servis kullanımı. <code>1/0</code> veya <code>true/false</code>.</li>
+                    <li><strong>HasCompanyCar</strong>: Şirket aracı. <code>1/0</code> veya <code>true/false</code>.</li>
+                    <li><strong>DefaultShift</strong>: Mavi yaka için vardiya. <code>1</code>=00:00-08:00, <code>2</code>=08:00-16:00, <code>3</code>=16:00-00:00.</li>
+                </ul>
+                <hr />
+                <div class="small text-muted">
+                    <i class="bi bi-shield-check"></i> Sistem, her satır için otomatik bir portal kullanıcısı ve güvenli parola üretir. E-posta geçerliyse kullanıcıya bilgi maili gider.
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-3">
+            <div class="card-header">
+                <strong>İpuçları</strong>
+            </div>
+            <div class="card-body small">
+                <ul class="mb-0">
+                    <li>CSV ayırıcı: <strong>virgül</strong>.</li>
+                    <li>UTF-8 Türkçe karakter desteği vardır.</li>
+                    <li>Hatalı satırlar işlem sonrası listelenir; başarılı olanlar etkilenmez.</li>
+                    <li>Departman/Unvan adı eşleşmezse ilgili alan boş kalır; sonra kişi düzenlemeden atanabilir.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+    (function () {
+        const dropZone = document.getElementById('dropZone');
+        const input = document.getElementById('csvInput');
+        const info = document.getElementById('fileInfo');
+
+        function setInfo(file) {
+            if (!file) { info.textContent = ''; return; }
+            const sizeKB = Math.round(file.size / 1024);
+            info.textContent = `${file.name} (${sizeKB} KB)`;
+        }
+
+        // Drop alanı boş yerine tıklanınca dosya seçtir
+        dropZone.addEventListener('click', (e) => {
+            // İçerideki buton/label tıklarını es geçiyoruz; yalnız boş alana tıklanınca tetikle
+            if (e.target.closest('label') || e.target === input) return;
+            input.click();
+        });
+
+        input.addEventListener('change', () => setInfo(input.files && input.files[0]));
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-light');
+        });
+
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('bg-light'));
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-light');
+            if (e.dataTransfer.files && e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                const name = file.name.toLowerCase();
+                const ok = name.endsWith('.csv') || name.endsWith('.xlsx');
+                if (!ok) {
+                    alert('Lütfen .csv veya .xlsx uzantılı bir dosya bırakın.');
+                    return;
+                }
+                input.files = e.dataTransfer.files;
+                setInfo(file);
+            }
+        });
+    })();
+    </script>
+    <style>
+      .border-dashed { border-style: dashed !important; }
+    </style>
+}

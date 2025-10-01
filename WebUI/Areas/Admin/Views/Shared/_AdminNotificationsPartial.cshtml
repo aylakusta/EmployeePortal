@@ -1,0 +1,26 @@
+@* Admin toast + SignalR client *@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"
+        integrity="sha512-7k3k0xj1Nf8Qf+gmT7HhYB56nDW8oB0fZlP6qM3oSM3br+U8c1wq5mVYdDe6H9fIsJHmKPXbFqE+Y7b8QWkGgw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function(){
+  try {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("/hubs/admin")
+      .withAutomaticReconnect()
+      .build();
+    connection.on("Notify", function(subject, message){
+      Toastify({
+        text: subject + "\n" + message,
+        duration: 5000,
+        close: true,
+        gravity: "top",
+        position: "right"
+      }).showToast();
+    });
+    connection.start().catch(()=>{});
+  } catch (e) {}
+})();
+</script>

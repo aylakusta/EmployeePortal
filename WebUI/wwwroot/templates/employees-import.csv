@@ -1,0 +1,3 @@
+﻿FirstName,LastName,Email,Department,JobTitle,Category,UsesTransport,HasCompanyCar,DefaultShift
+Ayşe,Yılmaz,ayse@example.com,Satış,Uzman,Beyaz,1,0,
+Mehmet,Demir,mehmet@example.com,Üretim,Operatör,Mavi,1,0,2

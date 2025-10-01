@@ -1,0 +1,24 @@
+@model IEnumerable<WebUI.Models.Shift>
+@{
+    ViewData["Title"] = "Shifts (Admin)";
+}
+<div class="card shadow-sm">
+  <div class="card-header"><h5 class="mb-0">@ViewData["Title"]</h5></div>
+  <div class="card-body">
+    <table class="table table-striped table-bordered">
+      <thead class="table-light">
+        <tr><th>User</th><th>Date</th><th>Shift Type</th></tr>
+      </thead>
+      <tbody>
+        @foreach (var s in Model)
+        {
+          <tr>
+            <td>@s.User?.FullName</td>
+            <td>@s.Date.ToString("dd.MM.yyyy")</td>
+            <td>@s.ShiftType</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

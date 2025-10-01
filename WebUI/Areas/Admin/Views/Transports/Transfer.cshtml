@@ -1,0 +1,116 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+  ViewData["Title"] = "Servis Transferi";
+  var fromId = (int?)ViewBag.FromServiceId;
+  var toId = (int?)ViewBag.ToServiceId;
+  var fromOptions = (IEnumerable<SelectListItem>)ViewBag.FromServices;
+  var toOptions = (IEnumerable<SelectListItem>)ViewBag.ToServices;
+  var sourceEmployees = (IEnumerable<WebUI.Areas.Admin.ViewModels.AssignCandidate>)ViewBag.SourceEmployees;
+}
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Servis Transferi</h3>
+    <div class="d-flex gap-2">
+      <a class="btn btn-secondary btn-sm" asp-action="Services">Servislere Dön</a>
+    </div>
+  </div>
+  <div class="card-body">
+
+    @if (TempData["Error"] is string err && !string.IsNullOrWhiteSpace(err))
+    {
+      <div class="alert alert-danger">@err</div>
+    }
+    @if (TempData["Warn"] is string warn && !string.IsNullOrWhiteSpace(warn))
+    {
+      <div class="alert alert-warning">@warn</div>
+    }
+    @if (TempData["Ok"] is string ok && !string.IsNullOrWhiteSpace(ok))
+    {
+      <div class="alert alert-success">@ok</div>
+    }
+
+    <form method="get" asp-action="Transfer" class="row g-2 mb-3">
+      <div class="col-md-5">
+        <label class="form-label">Kaynak Servis</label>
+        <select name="fromServiceId" class="form-select" asp-items="fromOptions">
+          <option value="">-- Seçiniz --</option>
+        </select>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Hedef Servis</label>
+        <select name="toServiceId" class="form-select" asp-items="toOptions">
+          <option value="">-- Seçiniz --</option>
+        </select>
+      </div>
+      <div class="col-md-2 align-self-end">
+        <button class="btn btn-outline-primary">Listele</button>
+      </div>
+    </form>
+
+    @if (fromId.HasValue && toId.HasValue)
+    {
+      if (sourceEmployees == null || !sourceEmployees.Any())
+      {
+        <div class="alert alert-info">Kaynak serviste transfer edilecek aktif personel bulunamadı.</div>
+      }
+      else
+      {
+        <form method="post" asp-action="Transfer">
+          @Html.AntiForgeryToken()
+          <input type="hidden" name="fromServiceId" value="@fromId" />
+          <input type="hidden" name="toServiceId" value="@toId" />
+
+          <div class="mb-2">
+            <label class="form-label">Personeller</label>
+            <div class="input-group mb-2">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input id="transferSearch" type="text" class="form-control" placeholder="İsim veya departman ara...">
+            </div>
+            <div class="border rounded p-2" style="max-height: 420px; overflow:auto;">
+              @foreach (var c in sourceEmployees)
+              {
+                <div class="form-check transfer-row" data-text="@($"{c.FullName} {c.Department} {c.Email}")">
+                  <input class="form-check-input" type="checkbox" name="selectedEmployeeIds" value="@c.EmployeeId" id="tr_@c.EmployeeId">
+                  <label class="form-check-label" for="tr_@c.EmployeeId">
+                    @c.FullName <small class="text-muted">(@c.Department)</small>
+                    @if (!string.IsNullOrEmpty(c.Email)) { <small class="text-muted">- @c.Email</small> }
+                  </label>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="tr_all"
+                     onclick="document.querySelectorAll('.transfer-row input[type=checkbox]').forEach(cb=>cb.checked=this.checked)">
+              <label class="form-check-label" for="tr_all">Tümünü Seç</label>
+            </div>
+            <button class="btn btn-primary" type="submit">
+              <i class="bi bi-arrow-left-right"></i> Transfer Et
+            </button>
+          </div>
+        </form>
+      }
+    }
+  </div>
+</div>
+
+@section Scripts{
+  <script>
+    (function(){
+      const input = document.getElementById('transferSearch');
+      if (!input) return;
+      const rows = document.querySelectorAll('.transfer-row');
+      function filterRows(){
+        const q = (input.value || "").toLowerCase();
+        rows.forEach(r => {
+          const t = (r.getAttribute('data-text') || '').toLowerCase();
+          r.style.display = t.includes(q) ? '' : 'none';
+        });
+      }
+      input.addEventListener('input', filterRows);
+    })();
+  </script>
+}

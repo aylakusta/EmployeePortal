@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Toplu Personel İçe Aktar (CSV)";
+}
+
+<h2 class="mb-3">@ViewData["Title"]</h2>
+
+@if (TempData["Error"] != null) { <div class="alert alert-danger">@Html.Raw(TempData["Error"])</div> }
+@if (TempData["Warn"]  != null) { <div class="alert alert-warning">@Html.Raw(TempData["Warn"])</div> }
+@if (TempData["Ok"]    != null) { <div class="alert alert-success">@Html.Raw(TempData["Ok"])</div> }
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form asp-action="EmployeesCsv" asp-controller="Imports" asp-area="Admin" method="post" enctype="multipart/form-data">
+      @Html.AntiForgeryToken()
+      <div class="mb-3">
+        <label class="form-label">CSV Dosyası</label>
+        <input class="form-control" type="file" name="file" accept=".csv" required />
+        <div class="form-text">
+          Başlık: <code>FirstName,LastName,Email,Department</code> — Türkçe karakterler desteklenir.
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit">Yükle</button>
+      <a asp-area="Admin" asp-controller="Employees" asp-action="Index" class="btn btn-outline-secondary ms-2">Personel Listesi</a>
+    </form>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header">Örnek CSV</div>
+  <div class="card-body">
+<pre class="mb-0">FirstName,LastName,Email,Department
+Ayşe,Yılmaz,ayse@example.com,Mühendislik
+Ali,Koç,ali@example.com,İnsan Kaynakları
+Çağla,Öztürk,cagla@example.com,Satış ve Pazarlama</pre>
+  </div>
+</div>

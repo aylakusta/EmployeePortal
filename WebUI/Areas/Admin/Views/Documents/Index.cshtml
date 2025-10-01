@@ -1,0 +1,33 @@
+@model IEnumerable<WebUI.Models.Document>
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Documents</h3>
+    <a class="btn btn-primary btn-sm" asp-action="Create">+ Yeni</a>
+  </div>
+  <div class="card-body">
+    <table class="table table-striped table-bordered">
+      <thead class="table-light">
+        <tr>
+          <th>File</th>
+          <th>Type</th>
+          <th>Uploaded</th>
+          <th style="width:120px">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var d in Model)
+        {
+          <tr>
+            <td>@d.FileName</td>
+            <td>@d.FileType</td>
+            <td>@d.UploadDate.ToLocalTime()</td>
+            <td>
+              <a class="btn btn-outline-primary btn-sm" href="@d.FilePath" target="_blank">Aç</a>
+              <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@d.Id">Sil</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+@model IEnumerable<WebUI.Models.Announcement>
+
+@{
+    ViewData["Title"] = "Announcements";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">@ViewData["Title"]</h4>
+  @if (User.IsInRole("Admin"))
+  { <a class="btn btn-primary btn-sm" asp-action="Create">New</a> }
+</div>
+
+<div class="list-group">
+  @foreach (var a in (Model ?? Enumerable.Empty<WebUI.Models.Announcement>()))
+  {
+    <div class="list-group-item">
+      <div class="d-flex justify-content-between">
+        <h5 class="mb-1">@a.Title</h5>
+        <small class="text-muted">@a.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</small>
+      </div>
+      <p class="mb-1">@a.Body</p>
+    </div>
+  }
+</div>

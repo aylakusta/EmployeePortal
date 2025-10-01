@@ -1,0 +1,56 @@
+﻿@model WebUI.Models.Employee
+@{
+    ViewData["Title"] = "Personel Sil";
+}
+
+<h3 class="mb-3">Personeli silmek üzeresiniz</h3>
+
+<div class="alert alert-warning">
+    <i class="bi bi-exclamation-triangle"></i>
+    <strong>Dikkat:</strong> Bu işlem; personele ait servis atamaları, yoklamalar ve varsa doküman talepleri ile
+    ilişkilendirilmiş verileri de (gerektiğinde kimlik hesabını da) kaldırır. Geri alınamaz.
+</div>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Ad Soyad</dt>
+      <dd class="col-sm-9">@Model.FullName</dd>
+
+      <dt class="col-sm-3">E-posta</dt>
+      <dd class="col-sm-9">@Model.Email</dd>
+
+      <dt class="col-sm-3">Departman</dt>
+      <dd class="col-sm-9">@Model.DepartmentRef?.Name</dd>
+
+      <dt class="col-sm-3">Kategori</dt>
+      <dd class="col-sm-9">@Model.Category</dd>
+
+      <dt class="col-sm-3">Portal Kullanıcısı</dt>
+      <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(Model.UserId))
+        {
+            <span class="badge bg-success">Bağlı</span>
+        }
+        else
+        {
+            <span class="badge bg-secondary">Yok</span>
+        }
+      </dd>
+    </dl>
+  </div>
+</div>
+
+<form asp-area="Admin"
+      asp-controller="Employees"
+      asp-action="Delete"
+      method="post"
+      class="d-flex gap-2">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger"
+            onclick="return confirm('Bu personeli silmek istediğinize emin misiniz?');">
+        <i class="bi bi-trash"></i> Sil
+    </button>
+    <a asp-area="Admin" asp-controller="Employees" asp-action="Index" class="btn btn-secondary">İptal</a>
+</form>

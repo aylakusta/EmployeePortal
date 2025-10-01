@@ -1,0 +1,138 @@
+@model IEnumerable<WebUI.Models.Attendance>
+@using WebUI.Models
+@{
+  ViewData["Title"] = "Katılım Bildirimleri";
+  AttendanceReason? pickedReason = ViewBag.Reason as AttendanceReason?;
+  string status = ViewBag.Status as string ?? "all";
+  string query = ViewBag.Query as string ?? "";
+  string minDate = ViewBag.MinDate as string ?? "";
+  string maxDate = ViewBag.MaxDate as string ?? "";
+  var userMap = ViewBag.UserMap as IDictionary<string, string>;
+}
+<div class="card shadow-sm">
+  <div class="card-header">
+    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+      <h3 class="mb-0">@ViewData["Title"]</h3>
+
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-area="Admin" asp-controller="AttendanceReviews"
+          asp-action="ExportCsv" asp-route-reason="@pickedReason" asp-route-status="@status"
+          asp-route-from="@ViewBag.From" asp-route-to="@ViewBag.To" asp-route-q="@query">
+          CSV
+        </a>
+        <a class="btn btn-outline-secondary btn-sm" asp-area="Admin" asp-controller="AttendanceReviews"
+          asp-action="ExportPdf" asp-route-reason="@pickedReason" asp-route-status="@status"
+          asp-route-from="@ViewBag.From" asp-route-to="@ViewBag.To" asp-route-q="@query">
+          PDF
+        </a>
+        <a class="btn btn-outline-secondary btn-sm" asp-area="Admin" asp-controller="AttendanceReviews"
+          asp-action="Print" asp-route-reason="@pickedReason" asp-route-status="@status" asp-route-from="@ViewBag.From"
+          asp-route-to="@ViewBag.To" asp-route-q="@query" target="_blank">
+          Yazdır
+        </a>
+      </div>
+    </div>
+    <form method="get" class="d-flex flex-wrap gap-2 mt-2">
+      <select name="reason" class="form-select">
+        <option value="">Mazeret (Tümü)</option>
+        <option value="Report" selected="@(pickedReason == AttendanceReason.Report ? "selected" : null)">Rapor</option>
+        <option value="Bereavement" selected="@(pickedReason == AttendanceReason.Bereavement ? "selected" : null)">Yakın
+          Vefatı</option>
+        <option value="Birth" selected="@(pickedReason == AttendanceReason.Birth ? "selected" : null)">Doğum</option>
+        <option value="Excuse" selected="@(pickedReason == AttendanceReason.Excuse ? "selected" : null)">Mazeret</option>
+      </select>
+      <select name="status" class="form-select">
+        <option value="all" selected="@(status == "all" ? "selected" : null)">Durum (Tümü)</option>
+        <option value="open" selected="@(status == "open" ? "selected" : null)">Bekleyen</option>
+        <option value="resolved" selected="@(status == "resolved" ? "selected" : null)">Tamamlandı</option>
+      </select>
+      <input type="date" name="from" id="from" class="form-control" min="@minDate" max="@maxDate"
+        value="@(ViewBag.From ?? "")" />
+      <input type="date" name="to" id="to" class="form-control" min="@minDate" max="@maxDate"
+        value="@(ViewBag.To ?? "")" />
+      <input type="search" name="q" value="@query" class="form-control" placeholder="Kullanıcı/e-posta/açıklama" />
+      <button class="btn btn-outline-primary">Filtrele</button>
+    </form>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Tarih</th>
+            <th>Kullanıcı</th>
+            <th>Mazeret</th>
+            <th>Açıklama</th>
+            <th>Talep</th>
+            <th>Durum</th>
+            <th style="width:160px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var a in Model)
+          {
+            var label = a.Reason switch
+            {
+              AttendanceReason.Report => "Rapor",
+              AttendanceReason.Bereavement => "Yakın Vefatı",
+              AttendanceReason.Birth => "Doğum",
+              _ => "Mazeret"
+            };
+            var user = userMap != null && userMap.ContainsKey(a.UserId) ? userMap[a.UserId] : a.UserId;
+
+            <tr>
+              <td>@a.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+              <td>@user</td>
+              <td>@label</td>
+              <td>@a.Description</td>
+              <td>
+                @if (a.DocumentRequestRef != null)
+                {
+                  <a asp-area="Admin" asp-controller="DocumentRequests" asp-action="Details"
+                    asp-route-id="@a.DocumentRequestRef.Id" class="btn btn-sm btn-outline-secondary">Talep</a>
+                }
+              </td>
+              <td>@(a.IsResolved ? "Tamamlandı" : "Bekliyor")</td>
+              <td class="text-nowrap">
+                <a asp-area="Admin" asp-controller="AttendanceReviews" asp-action="Details" asp-route-id="@a.Id"
+                  class="btn btn-sm btn-outline-primary">Detay</a>
+                @if (!a.IsResolved)
+                {
+                  <form asp-area="Admin" asp-controller="AttendanceReviews" asp-action="MarkResolved" asp-route-id="@a.Id"
+                    method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-sm btn-success">Tamamlandı</button>
+                  </form>
+                }
+                else
+                {
+                  <form asp-area="Admin" asp-controller="AttendanceReviews" asp-action="Reopen" asp-route-id="@a.Id"
+                    method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-sm btn-outline-secondary">Yeniden Aç</button>
+                  </form>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <script>
+    // from/to birbirini kitlesin
+    const from = document.getElementById('from');
+    const to = document.getElementById('to');
+    function sync() {
+      if (from.value) to.min = from.value;
+      if (to.value) from.max = to.value;
+    }
+    from?.addEventListener('change', sync);
+    to?.addEventListener('change', sync);
+    sync();
+  </script>
+}

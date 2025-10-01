@@ -1,0 +1,36 @@
+@model IEnumerable<WebUI.Models.JobTitle>
+@{
+    ViewData["Title"] = "Unvanlar";
+}
+<div class="d-flex justify-content-between mb-3">
+    <h3></h3>
+    <a asp-area="Admin" asp-controller="JobTitles" asp-action="Create" class="btn btn-primary">Yeni Unvan</a>
+</div>
+<div class="card shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Ad</th>
+                    <th class="text-end">İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var t in Model)
+                {
+                    <tr>
+                        <td>@t.Name</td>
+                        <td class="text-end">
+                            <a asp-action="Edit" asp-route-id="@t.Id" class="btn btn-outline-primary btn-sm">Düzenle</a>
+                            <form asp-action="Delete" asp-route-id="@t.Id" method="post" class="d-inline"
+                                onsubmit="return confirm('Silinsin mi?');">
+                                @Html.AntiForgeryToken()
+                                <button class="btn btn-outline-danger btn-sm">Sil</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

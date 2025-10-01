@@ -1,0 +1,11 @@
+@model WebUI.Models.DocumentRequest
+@{
+    ViewData["Title"] = "Talep Tamamlandı";
+}
+<div class="alert alert-success mt-3">
+  Talebiniz kaydedildi.
+  @if (Model.StartDate.HasValue && Model.EndDate.HasValue) {
+    <div>Seçtiğiniz <strong>@Model.StartDate.Value:dd.MM.yyyy</strong> – <strong>@Model.EndDate.Value:dd.MM.yyyy</strong> tarihleri için servis kullanımı otomatik olarak “<strong>kullanmayacağım</strong>” şeklinde işlenmiştir.</div>
+  }
+</div>
+<a asp-controller="Attendances" asp-action="Index" class="btn btn-primary">Bildirimlere Dön</a>

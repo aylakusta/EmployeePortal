@@ -1,0 +1,25 @@
+@using WebUI.Areas.Admin.ViewModels
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Yönetim Paneli";
+}
+
+<div class="row g-3 mb-3">
+  @foreach (var k in Model.Kpis)
+  {
+    <div class="col-xl-3 col-md-6">
+      <div class="card shadow-sm h-100 position-relative">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3"><i class="bi @k.Icon fs-1"></i></div>
+          <div class="flex-grow-1">
+            <div class="fs-4 fw-bold">@k.Value</div>
+            <div class="text-muted">@k.Title</div>
+            @if (!string.IsNullOrEmpty(k.Subtext)) { <div class="small text-muted">@k.Subtext</div> }
+          </div>
+          @if (!string.IsNullOrEmpty(k.Badge)) { <span class="badge @k.BadgeClass">@k.Badge</span> }
+        </div>
+        @if (!string.IsNullOrEmpty(k.Url)) { <a href="@k.Url" class="stretched-link" aria-label="@k.Title"></a> }
+      </div>
+    </div>
+  }
+</div>

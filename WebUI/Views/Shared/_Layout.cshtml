@@ -1,0 +1,186 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using WebUI.Models
+@inject UserManager<WebUI.Models.ApplicationUser> UserManager
+@inject SignInManager<WebUI.Models.ApplicationUser> SignInManager
+@inject WebUI.Data.ApplicationDbContext Ctx
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@inject WebUI.Data.ApplicationDbContext Ctx
+
+@{
+    bool isWhiteCollar = false;
+
+    if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        WebUI.Models.Employee? emp = null;
+
+        if (!string.IsNullOrEmpty(uid))
+        {
+            emp = Ctx.Employees.AsNoTracking().FirstOrDefault(e => e.UserId == uid);
+        }
+
+        // fallback: email claim ile eşle
+        if (emp == null)
+        {
+            var email = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                emp = Ctx.Employees.AsNoTracking().FirstOrDefault(e => e.Email == email);
+            }
+        }
+
+        isWhiteCollar = (emp?.Category == Employee.EmployeeCategory.WhiteCollar);
+    }
+}
+
+
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Portal</title>
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+
+<body class="bg-light">
+    @if (User?.Identity?.IsAuthenticated ?? false)
+    {
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Home" asp-action="Index">Portal</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="mainNav">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <!--li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                                    </li-->
+                            @if (!isWhiteCollar)
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Shifts"
+                                        asp-action="Index">Vardiyalar</a>
+                                </li>
+                            }
+                            <li class="nav-item"><a class="nav-link" asp-controller="Documents"
+                                    asp-action="Index">Evraklar</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Announcements"
+                                    asp-action="Index">Bildirimler</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Menus" asp-action="Index">Yemek
+                                    Menüsü</a>
+                            </li>
+                            @await Component.InvokeAsync("TransportNav")
+                            <li class="nav-item"><a class="nav-link" asp-controller="Attendances" asp-action="Index">Katılım
+                                    Durumu</a></li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Profile" asp-action="Index">Hesabım</a>
+                            </li>
+
+
+                            @* Admin Area linki sadece Admin rolünde görünsün *@
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Admin</a>
+                                </li>
+                            }
+                        </ul>
+
+                        <ul class="navbar-nav">
+                            @if (SignInManager.IsSignedIn(User))
+                            {
+                                <li class="nav-item">
+                                    <span class="navbar-text text-white-50 me-2">Merhaba, @UserManager.GetUserName(User)</span>
+                                </li>
+                                <li class="nav-item">
+                                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post"
+                                        class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-outline-light btn-sm">Çıkış</button>
+                                    </form>
+                                </li>
+                            }
+                            else
+                            {
+                                <li class="nav-item">
+                                    <a class="btn btn-outline-light btn-sm" asp-controller="Account"
+                                        asp-action="Login">Login</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </header>
+    }
+    <main class="container py-4">
+        @RenderBody()
+
+        @if (TempData["Success"] is string s && !string.IsNullOrWhiteSpace(s))
+        {
+            <div class="alert alert-success" role="alert">@s</div>
+        }
+        @if (TempData["Error"] is string e && !string.IsNullOrWhiteSpace(e))
+        {
+            <div class="alert alert-danger" role="alert">@e</div>
+        }
+    </main>
+
+    <footer class="border-top py-3">
+        <div class="container text-center text-muted">
+            © @DateTime.Now.Year Employee Portal
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @RenderSection("Scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const CLEAR_AFTER_MS = 4000;
+
+            const clearPlaceholders = (root = document) => {
+                root.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el => {
+                    if (el.dataset.phCleared === '1') return;
+                    const original = el.getAttribute('placeholder') || '';
+                    setTimeout(() => {
+                        // Orijinali istersen data-* ile saklıyoruz
+                        el.setAttribute('data-original-placeholder', original);
+                        el.removeAttribute('placeholder');
+                        el.dataset.phCleared = '1';
+                    }, CLEAR_AFTER_MS);
+                });
+            };
+
+            // İlk yüklemede
+            clearPlaceholders();
+
+            // Sonradan DOM’a eklenenler (modal, partial, ajax vb.) için de uygula
+            const obs = new MutationObserver(mutations => {
+                for (const m of mutations) {
+                    for (const n of m.addedNodes) {
+                        if (n.nodeType === 1) { // ELEMENT_NODE
+                            clearPlaceholders(n);
+                        }
+                    }
+                }
+            });
+            obs.observe(document.body, { childList: true, subtree: true });
+        });
+    </script>
+
+</body>
+
+</html>

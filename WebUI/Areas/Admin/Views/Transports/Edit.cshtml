@@ -1,0 +1,95 @@
+@model WebUI.Models.Service
+@{
+  ViewData["Title"] = "Servis Düzenleme";
+}
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Servis Düzenle</h3>
+    <a class="btn btn-secondary btn-sm" asp-action="Services">Geri</a>
+  </div>
+
+  <div class="card-body">
+    <form asp-area="Admin" asp-controller="Transports" asp-action="Update" asp-route-id="@Model.Id" method="post"
+      class="row g-3">
+      @Html.AntiForgeryToken()
+      <input type="hidden" asp-for="Id" />
+      <div asp-validation-summary="All" class="text-danger"></div>
+
+      <div class="col-md-6">
+        <label asp-for="Name" class="form-label">Servis Adı</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-6">
+        <label asp-for="PlateNumber" class="form-label">Plaka</label>
+        <input asp-for="PlateNumber" class="form-control" />
+        <span asp-validation-for="PlateNumber" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-6">
+        <label asp-for="StartPoint" class="form-label">Başlangıç Noktası</label>
+        <input asp-for="StartPoint" class="form-control" />
+        <span asp-validation-for="StartPoint" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-6">
+        <label asp-for="EndPoint" class="form-label">Bitiş Noktası</label>
+        <input asp-for="EndPoint" class="form-control" />
+        <span asp-validation-for="EndPoint" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-4">
+        <label asp-for="StartTime" class="form-label">Başlangıç Saati</label>
+        <!-- TagHelper bazı durumlarda TimeSpan formatını iyi yazmıyor; değeri elle garanti altına al -->
+        <input asp-for="StartTime" type="time" class="form-control"
+          value="@(Model.StartTime.HasValue? Model.StartTime.Value.ToString(@"hh\:mm") : "")" />
+        <span asp-validation-for="StartTime" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-4">
+        <label asp-for="SeatCount" class="form-label">Koltuk Sayısı</label>
+        <input asp-for="SeatCount" type="number" class="form-control" />
+        <span asp-validation-for="SeatCount" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-4">
+        <label asp-for="FuelType" class="form-label">Yakıt Tipi</label>
+        <input asp-for="FuelType" class="form-control" />
+        <span asp-validation-for="FuelType" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-6">
+        <label asp-for="Brand" class="form-label">Markası</label>
+        <input asp-for="Brand" class="form-control" />
+        <span asp-validation-for="Brand" class="text-danger"></span>
+      </div>
+
+      <div class="col-md-6">
+        <label asp-for="Model" class="form-label">Modeli</label>
+        <input asp-for="Model" class="form-control" />
+        <span asp-validation-for="Model" class="text-danger"></span>
+      </div>
+
+      @* İstersen aktif/pasif yönet *@
+      <div class="col-12 form-check">
+        <input asp-for="IsActive" class="form-check-input" />
+        <label asp-for="IsActive" class="form-check-label">Aktif</label>
+      </div>
+
+      <div class="text-muted">
+        Oluşturma: @Model.CreatedAt.ToLocalTime()
+      </div>
+
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Güncelle</button>
+        <a asp-action="Services" class="btn btn-secondary">Vazgeç</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+}

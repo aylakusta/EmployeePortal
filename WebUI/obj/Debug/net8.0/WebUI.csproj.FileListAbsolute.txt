@@ -1,0 +1,9 @@
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.csproj.AssemblyReference.cache
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.GeneratedMSBuildEditorConfig.editorconfig
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.AssemblyInfoInputs.cache
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.AssemblyInfo.cs
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.csproj.CoreCompileInputs.cache
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.MvcApplicationPartsAssemblyInfo.cs
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.MvcApplicationPartsAssemblyInfo.cache
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.RazorAssemblyInfo.cache
+D:\MVC\EmployeePortal\WebUI\obj\Debug\net8.0\WebUI.RazorAssemblyInfo.cs

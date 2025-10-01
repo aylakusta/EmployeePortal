@@ -1,0 +1,43 @@
+@model IEnumerable<WebUI.Models.ServiceAssignment>
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Servis Kullanımları</h3>
+    <div class="d-flex gap-2">
+      <a asp-action="Assign" class="btn btn-primary btn-sm">Personel Ata</a>
+      <a asp-action="Services" class="btn btn-secondary btn-sm">Servis Listesi</a>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Personel</th>
+            <th>Servis Adı</th>
+            <th>Plaka</th>
+            <th>Başlangıç Saati</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var a in Model)
+          {
+            <tr>
+              <td>@(a.Employee?.FirstName) @(a.Employee?.LastName)</td>
+              <td>@a.Service?.Name</td>
+              <td>@a.Service?.PlateNumber</td>
+              <td>@(a.Service?.StartTime?.ToString(@"hh\:mm"))</td>
+              <td>
+                <form asp-action="Unassign" asp-route-id="@a.Id" method="post" class="d-inline">
+                  <button class="btn btn-sm btn-outline-danger"
+                    onclick="return confirm('Atama kaldırılsın mı?')">Kaldır</button>
+                </form>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

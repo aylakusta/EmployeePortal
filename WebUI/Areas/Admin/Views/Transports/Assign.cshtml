@@ -1,0 +1,98 @@
+@model WebUI.Areas.Admin.ViewModels.AssignViewModel
+
+@if (TempData["Error"] is string err && !string.IsNullOrWhiteSpace(err))
+{
+  <div class="alert alert-danger">@err</div>
+}
+@if (TempData["Info"] is string info && !string.IsNullOrWhiteSpace(info))
+{
+  <div class="alert alert-info">@info</div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Servise Personel Atama</h3>
+  <div class="d-flex gap-2">
+    <a class="btn btn-secondary btn-sm"
+       asp-area="Admin" asp-controller="Transports" asp-action="Index">
+      Atamalar
+    </a>
+    <a class="btn btn-outline-secondary btn-sm"
+       asp-area="Admin" asp-controller="Transports" asp-action="Services">
+      Servisler
+    </a>
+  </div>
+</div>
+
+<!-- 1) Servis seçme -->
+<form method="get" asp-action="Assign" class="row g-2 mb-3">
+  <div class="col-md-6">
+    <label class="form-label">Servis Seç</label> @if (ViewBag.CapacityInfo != null) { <span class="badge bg-info ms-2">@ViewBag.CapacityInfo</span> }
+    <select name="serviceId" class="form-select" asp-items="ViewBag.Services">
+      <option value="">-- Seçiniz --</option>
+    </select>
+  </div>
+  <div class="col-md-2 align-self-end">
+    <button class="btn btn-outline-primary">Listele</button>
+  </div>
+</form>
+
+@if (Model.ServiceId.HasValue)
+{
+  if (Model.Candidates == null || !Model.Candidates.Any())
+  {
+    <div class="alert alert-info">Bu servise atanabilecek uygun personel bulunamadı.</div>
+  }
+  else
+  {
+    <!-- 2) Personel seçimi -->
+    <form method="post" asp-action="Assign">
+      @Html.AntiForgeryToken()
+      <input type="hidden" asp-for="ServiceId" />
+
+      <div class="mb-2">
+        <div class="input-group mb-2">
+          <span class="input-group-text"><i class="bi bi-search"></i></span>
+          <input id="candidateSearch" type="text" class="form-control" placeholder="İsim veya departman ara...">
+        </div>
+        <label class="form-label">Personeller</label>
+        <div class="border rounded p-2" style="max-height: 420px; overflow:auto;">
+          @foreach (var c in Model.Candidates)
+          {
+            <div class="form-check candidate-row" data-text="@($"{c.FullName} {c.Department} {c.Email}")">
+              <input class="form-check-input" type="checkbox" name="SelectedEmployeeIds" value="@c.EmployeeId" id="emp_@c.EmployeeId">
+              <label class="form-check-label" for="emp_@c.EmployeeId">
+                @c.FullName <small class="text-muted">(@c.Department)</small>
+              </label>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="mt-2 d-flex gap-2">
+        <button class="btn btn-primary">Ata</button>
+        <a asp-action="Services" class="btn btn-secondary">Geri</a>
+      </div>
+    </form>
+  }
+}
+
+
+
+@section Scripts{
+  <script>
+    (function(){
+      const input = document.getElementById('candidateSearch');
+      if (!input) return;
+      const rows = document.querySelectorAll('.candidate-row');
+      function filterCandidates(){
+        const q = (input.value || "").toLowerCase();
+        rows.forEach(r => {
+          const t = (r.getAttribute('data-text') || '').toLowerCase();
+          r.style.display = t.includes(q) ? '' : 'none';
+        });
+      }
+      input.addEventListener('input', filterCandidates);
+    })();
+  </script>
+  <partial name="_ValidationScriptsPartial" />
+}

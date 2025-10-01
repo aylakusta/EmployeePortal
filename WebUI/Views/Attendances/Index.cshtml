@@ -1,0 +1,64 @@
+@model IEnumerable<WebUI.Models.Attendance>
+@{
+  ViewData["Title"] = "Katılım Durumlarım";
+}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">@ViewData["Title"]</h3>
+    <a asp-action="Create" class="btn btn-primary btn-sm">Yeni durum ekle</a>
+  </div>
+  <div class="card-body">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>Mazeret</th>
+          <th>Açıklama</th>
+          <th>Talep</th>
+          <th>Durum</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach (var a in Model)
+        {
+          <tr>
+            <td>@a.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+            <td>
+              @{
+                var label = a.Reason switch
+                {
+                  WebUI.Models.AttendanceReason.Report => "Rapor",
+                  WebUI.Models.AttendanceReason.Bereavement => "Yakın Vefatı",
+                  WebUI.Models.AttendanceReason.Birth => "Doğum",
+                  _ => "Mazeret"
+                };
+              }
+              @label
+            </td>
+            <td>@a.Description</td>
+            <td>
+              @if (a.DocumentRequestRef != null)
+              {
+                <a asp-controller="Documents" asp-action="ViewRequest" asp-route-id="@a.DocumentRequestRef.Id"
+                  class="btn btn-outline-secondary btn-sm">
+                  Talebi aç
+                </a>
+              }
+            </td>
+            <td>
+              @if (a.IsResolved)
+              {
+                <span class="badge bg-success">Tamamlandı</span>
+              }
+              else
+              {
+
+                <span class="badge bg-warning text-dark">Bekliyor</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

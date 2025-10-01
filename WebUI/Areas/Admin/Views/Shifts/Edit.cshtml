@@ -1,0 +1,45 @@
+@model WebUI.Models.Shift
+@{
+    ViewData["Title"] = "Edit Shift";
+}
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="Edit" method="post">
+  @Html.AntiForgeryToken()
+  <input type="hidden" asp-for="Id" />
+
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label asp-for="Date" class="form-label"></label>
+      <input asp-for="Date" type="date" class="form-control" />
+      <span asp-validation-for="Date" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+      <label asp-for="StartTime" class="form-label">Start</label>
+      <input asp-for="StartTime" type="time" class="form-control" />
+      <span asp-validation-for="StartTime" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+      <label asp-for="EndTime" class="form-label">End</label>
+      <input asp-for="EndTime" type="time" class="form-control" />
+      <span asp-validation-for="EndTime" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+      <label asp-for="ShiftType" class="form-label"></label>
+      <select asp-for="ShiftType" class="form-select" asp-items="Html.GetEnumSelectList<WebUI.Models.ShiftType>()"></select>
+      <span asp-validation-for="ShiftType" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+      <label asp-for="Meal" class="form-label"></label>
+      <select asp-for="Meal" class="form-select" asp-items="Html.GetEnumSelectList<WebUI.Models.Meal>()"></select>
+      <span asp-validation-for="Meal" class="text-danger"></span>
+    </div>
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-success">Save</button>
+    <a asp-action="AdminIndex" class="btn btn-secondary">Back</a>
+  </div>
+</form>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

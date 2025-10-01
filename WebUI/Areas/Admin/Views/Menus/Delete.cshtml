@@ -1,0 +1,30 @@
+@model WebUI.Models.Menu
+@{
+    ViewData["Title"] = "Menü Sil";
+}
+
+<h2 class="mb-3 text-danger">Menü Sil</h2>
+<div class="alert alert-warning">
+    <strong>Dikkat!</strong> Bu menüyü silmek istediğinize emin misiniz?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Ad</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+
+    <dt class="col-sm-3">URL</dt>
+    <dd class="col-sm-9">@Model.Url</dd>
+
+    <dt class="col-sm-3">Sıra</dt>
+    <dd class="col-sm-9">@Model.Order</dd>
+
+    <dt class="col-sm-3">Tarih</dt>
+    <dd class="col-sm-9">@Model.Date.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</dd>
+</dl>
+
+<form asp-area="Admin" asp-controller="Menus" asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Evet, sil</button>
+    <a asp-area="Admin" asp-controller="Menus" asp-action="Index" class="btn btn-secondary ms-2">Vazgeç</a>
+</form>

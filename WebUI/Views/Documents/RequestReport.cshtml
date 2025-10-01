@@ -1,0 +1,34 @@
+@model WebUI.Models.DocumentRequest
+@{
+    ViewData["Title"] = "Rapor Yükleme";
+}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">@ViewData["Title"]</h3>
+    <a asp-controller="Attendances" asp-action="Index" class="btn btn-secondary btn-sm">Bildirimlerim</a>
+  </div>
+  <div class="card-body">
+    <form asp-action="RequestReport" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="row g-3">
+      @Html.AntiForgeryToken()
+      <div asp-validation-summary="All" class="text-danger"></div>
+
+      <div class="col-md-12">
+        <label class="form-label">Rapor Dosyası</label>
+        <input type="file" name="reportFile" class="form-control" />
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Başlangıç Tarihi (opsiyonel)</label>
+        <input type="date" name="startDate" class="form-control" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Bitiş Tarihi (opsiyonel)</label>
+        <input type="date" name="endDate" class="form-control" />
+      </div>
+
+      <div class="col-12">
+        <button class="btn btn-primary">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+@model IEnumerable<WebUI.Models.Attendance>
+@{
+  Layout = null;
+  var userMap = ViewBag.UserMap as IDictionary<string,string>;
+}
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Katılım Bildirimleri</title>
+<style>body{font-family:Arial; font-size:12px} table{width:100%; border-collapse:collapse} th,td{border:1px solid #ccc; padding:6px}</style>
+</head><body onload="window.print()">
+<h3>Katılım Bildirimleri</h3>
+<table>
+<thead><tr><th>Tarih</th><th>Kullanıcı</th><th>Mazeret</th><th>Açıklama</th><th>Durum</th></tr></thead>
+<tbody>
+@foreach (var a in Model)
+{
+  var label = a.Reason.ToString();
+  var user = userMap != null && userMap.ContainsKey(a.UserId) ? userMap[a.UserId] : a.UserId;
+  <tr>
+    <td>@a.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+    <td>@user</td>
+    <td>@label</td>
+    <td>@a.Description</td>
+    <td>@(a.IsResolved ? "Tamamlandı" : "Bekliyor")</td>
+  </tr>
+}
+</tbody>
+</table>
+</body></html>

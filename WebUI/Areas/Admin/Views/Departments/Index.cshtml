@@ -1,0 +1,75 @@
+@model IEnumerable<WebUI.Models.Department>
+@{
+  ViewData["Title"] = "Departmanlar";
+}
+
+<h2 class="mb-3">Departmanlar</h2>
+
+<table class="table table-sm align-middle">
+  <thead>
+    <tr>
+      <th>Ad</th>
+      <th style="width:160px"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var d in Model)
+    {
+      <tr>
+        <td>@d.Name</td>
+        <td class="text-end">
+          <a asp-action="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i>
+          </a>
+
+          <!-- Sil butonu: delete sayfasına gitmek yerine modal açacak -->
+          <button type="button" class="btn btn-sm btn-outline-danger btn-delete-dept" data-id="@d.Id" data-name="@d.Name">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<!-- Onay Modalı -->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="confirmDeleteLabel" class="modal-title">Silme Onayı</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <strong id="delete-dept-name"></strong> silinsin mi?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <form id="deleteForm" method="post" asp-area="Admin" asp-controller="Departments" asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="delete-id" />
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+            <button type="submit" class="btn btn-danger">Evet, Sil</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+@section Scripts {
+    <script>
+      document.addEventListener('click', function (e) {
+        const btn = e.target.closest('.btn-delete-dept');
+        if (!btn) return;
+
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name') || '';
+        document.getElementById('delete-id').value = id;
+        document.getElementById('delete-dept-name').textContent = `"${name}"`;
+
+        const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        modal.show();
+      });
+    </script>
+}

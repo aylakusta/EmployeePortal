@@ -1,0 +1,34 @@
+@model IEnumerable<WebUI.Models.Attendance>
+@{
+    ViewData["Title"] = "Attendances";
+}
+
+<h2>Attendances</h2>
+<p>
+    <a asp-action="Create" class="btn btn-primary">Yeni Attendance</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>UserId</th>
+            <th>Date</th>
+            <th>Present</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.UserId</td>
+            <td>@item.CreatedAt.ToShortDateString()</td>
+            <td>@item.Description</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

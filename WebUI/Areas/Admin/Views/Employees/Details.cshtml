@@ -1,0 +1,18 @@
+@model WebUI.Models.Employee
+@{
+    ViewData["Title"] = "Personel Detayları";
+}
+
+<dl class="row">
+  <dt class="col-sm-3">Adı</dt>
+  <dd class="col-sm-9">@($"{Model.FirstName} {Model.LastName}")</dd>
+  <dt class="col-sm-3">Departmanı</dt>
+  <dd class="col-sm-9">@Model.DepartmentRef?.Name</dd>
+  <dt class="col-sm-3">Epostası</dt>
+  <dd class="col-sm-9">@Model.Email</dd>
+  <dt class="col-sm-3">Giriş Tarihi</dt>
+  <dd class="col-sm-9">@Model.HireDate?.ToString("dd.MM.yyyy")</dd>
+  <dt class="col-sm-3">Ücreti</dt>
+  <dd class="col-sm-9">@Model.Salary</dd>
+</dl>
+<a asp-action="Index" class="btn btn-secondary">Back</a>

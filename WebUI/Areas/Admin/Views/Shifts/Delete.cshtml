@@ -1,0 +1,28 @@
+@model WebUI.Models.Shift
+@{
+    ViewData["Title"] = "Delete Shift";
+}
+<h2>@ViewData["Title"]</h2>
+
+<div class="alert alert-warning">Are you sure you want to delete this shift?</div>
+
+<dl class="row">
+  <dt class="col-sm-3">Date</dt>
+  <dd class="col-sm-9">@Model.Date.ToString("dd.MM.yyyy")</dd>
+
+  <dt class="col-sm-3">Start</dt>
+  <dd class="col-sm-9">@Model.StartTime?.ToString(@"hh\:mm")</dd>
+
+  <dt class="col-sm-3">End</dt>
+  <dd class="col-sm-9">@Model.EndTime?.ToString(@"hh\:mm")</dd>
+
+  <dt class="col-sm-3">Type</dt>
+  <dd class="col-sm-9">@Model.ShiftType</dd>
+</dl>
+
+<form asp-action="DeleteConfirmed" method="post">
+  @Html.AntiForgeryToken()
+  <input type="hidden" asp-for="Id" />
+  <button class="btn btn-danger">Delete</button>
+  <a asp-action="AdminIndex" class="btn btn-secondary">Back</a>
+</form>

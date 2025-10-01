@@ -1,0 +1,32 @@
+@model WebUI.Models.Department
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Documents</h3>
+    <a class="btn btn-primary btn-sm" asp-action="Create">+ Yeni</a>
+  </div>
+  <div class="card-body">
+    <hr />
+    <form asp-action="Create" method="post">
+      <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+      <div class="mb-3">
+        <label asp-for="Name" class="form-label">Adı</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="Description" class="form-label">Açıklama</label>
+        <input asp-for="Description" class="form-control" />
+      </div>
+
+      <button type="submit" class="btn btn-primary">Kaydet</button>
+      <a asp-action="Index" class="btn btn-secondary">Geri</a>
+    </form>
+
+    @section Scripts {
+      <partial name="_ValidationScriptsPartial" />
+    }
+  </div>
+</div>

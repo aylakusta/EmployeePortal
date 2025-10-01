@@ -1,0 +1,65 @@
+@model IEnumerable<WebUI.Models.DocumentRequest>
+@using WebUI.Models
+@{
+    ViewData["Title"] = "Evrak Talepleri";
+    DocumentRequestType? pickedType = ViewBag.Type as DocumentRequestType?;
+    string status = ViewBag.Status as string ?? "all";
+    string query = ViewBag.Query as string ?? "";
+    string minDate = ViewBag.MinDate as string ?? "";
+    string maxDate = ViewBag.MaxDate as string ?? "";
+}
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <h3 class="mb-0">@ViewData["Title"]</h3>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary btn-sm"
+         asp-area="Admin" asp-controller="DocumentRequests" asp-action="ExportCsv"
+         asp-route-type="@pickedType" asp-route-status="@status" asp-route-from="@ViewBag.From" asp-route-to="@ViewBag.To" asp-route-q="@query">
+         CSV
+      </a>
+      <a class="btn btn-outline-secondary btn-sm"
+         asp-area="Admin" asp-controller="DocumentRequests" asp-action="ExportPdf"
+         asp-route-type="@pickedType" asp-route-status="@status" asp-route-from="@ViewBag.From" asp-route-to="@ViewBag.To" asp-route-q="@query">
+         PDF
+      </a>
+      <a class="btn btn-outline-secondary btn-sm"
+         asp-area="Admin" asp-controller="DocumentRequests" asp-action="Print"
+         asp-route-type="@pickedType" asp-route-status="@status" asp-route-from="@ViewBag.From" asp-route-to="@ViewBag.To" asp-route-q="@query" target="_blank">
+         Yazdır
+      </a>
+    </div>
+  </div>
+  <div class="card-header">
+    <form method="get" class="d-flex flex-wrap gap-2">
+      <select name="type" class="form-select">
+        <option value="">Tür (Tümü)</option>
+        <option value="MedicalReport" selected="@(pickedType==DocumentRequestType.MedicalReport? "selected" : null)">Rapor</option>
+        <option value="AnnualLeave"  selected="@(pickedType==DocumentRequestType.AnnualLeave? "selected" : null)">Yıllık İzin</option>
+      </select>
+      <select name="status" class="form-select">
+        <option value="all" selected="@(status=="all"?"selected":null)">Durum (Tümü)</option>
+        <option value="incomplete" selected="@(status=="incomplete"?"selected":null)">Eksik</option>
+        <option value="completed" selected="@(status=="completed"?"selected":null)">Tamamlandı</option>
+      </select>
+      <input type="date" name="from" id="from" class="form-control" min="@minDate" max="@maxDate" value="@(ViewBag.From ?? "")" />
+      <input type="date" name="to"   id="to"   class="form-control" min="@minDate" max="@maxDate" value="@(ViewBag.To ?? "")" />
+      <input type="search" name="q" value="@query" class="form-control" placeholder="Kullanıcı/e-posta/dosya adı" />
+      <button class="btn btn-outline-primary">Filtrele</button>
+    </form>
+  </div>
+  <!-- Tablonun geri kalanı sende mevcut haliyle kalabilir -->
+</div>
+
+@section Scripts {
+<script>
+const from = document.getElementById('from');
+const to = document.getElementById('to');
+function sync(){
+  if(from.value) to.min = from.value;
+  if(to.value) from.max = to.value;
+}
+from?.addEventListener('change', sync);
+to?.addEventListener('change', sync);
+sync();
+</script>
+}

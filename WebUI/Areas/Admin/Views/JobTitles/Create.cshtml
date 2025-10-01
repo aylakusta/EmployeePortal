@@ -1,0 +1,18 @@
+@model WebUI.Models.JobTitle
+@{
+  ViewData["Title"] = "Unvan Ekle";
+}
+<h3>Unvan Ekle</h3>
+<form asp-action="Create" method="post" class="row g-3">
+  @Html.AntiForgeryToken()
+  <div class="col-md-6">
+    <label asp-for="Name" class="form-label"></label>
+    <input asp-for="Name" class="form-control" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+  </div>
+  <div class="col-12">
+    <button class="btn btn-success">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Geri</a>
+  </div>
+</form>
+<partial name="_ValidationScriptsPartial" />

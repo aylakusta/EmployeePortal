@@ -1,0 +1,232 @@
+@{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Kullanıcı Yetkileri";
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h4>Kullanıcı Yetkileri</h4>
+        <p>Buradan kullanıcıların rollerini düzenleyebilirsiniz.</p>
+
+        <div class="row mb-2">
+            <div class="col-md-6">
+                <input id="userSearch" class="form-control" placeholder="Ara (kullanıcı veya e-posta)" />
+            </div>
+            <div class="col-md-6 text-end">
+                <small class="text-muted">Sayfa boyutu: <span id="pageSizeLabel">10</span></small>
+            </div>
+        </div>
+
+        <div id="usersContainer" class="table-responsive">
+            <table class="table table-striped" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı</th>
+                        <th>E-Posta</th>
+                        <th>Roller</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div><button id="prevBtn" class="btn btn-sm btn-outline-secondary">Önceki</button></div>
+            <div><span id="pageInfo"></span></div>
+            <div><button id="nextBtn" class="btn btn-sm btn-outline-secondary">Sonraki</button></div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="rolesModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="rolesForm">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rolleri Düzenle - <span id="modalUserName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modalUserId" name="userId" />
+                    <div id="rolesChecklist" class="mb-3">
+                        <!-- checkboxes injected by JS -->
+                    </div>
+                    <div id="rolesMessage" class="text-danger"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(async function () {
+    const tableBody = document.querySelector("#usersTable tbody");
+    const modalEl = document.getElementById('rolesModal');
+    const modal = new bootstrap.Modal(modalEl);
+    const rolesChecklist = document.getElementById('rolesChecklist');
+    const modalUserName = document.getElementById('modalUserName');
+    const modalUserId = document.getElementById('modalUserId');
+    const rolesForm = document.getElementById('rolesForm');
+    const rolesMessage = document.getElementById('rolesMessage');
+    const userSearch = document.getElementById('userSearch');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pageInfo = document.getElementById('pageInfo');
+    const pageSize = 50;
+    document.getElementById('pageSizeLabel').textContent = pageSize;
+
+    let allUsers = [];
+    let roles = [];
+    let currentPage = 1;
+
+    async function fetchRoles() {
+        const res = await fetch('/Admin/Users/Roles');
+        if (!res.ok) throw new Error('Roller alınamadı');
+        roles = await res.json();
+    }
+
+    async function fetchUsers() {
+        const res = await fetch('/Admin/Users/List');
+        if (!res.ok) throw new Error('Kullanıcılar alınamadı');
+        allUsers = await res.json(); // Beklenen alanlar: id, userName, email, roles
+    }
+
+    function filterAndPage() {
+        const q = userSearch.value.trim().toLowerCase();
+        const filtered = allUsers.filter(u =>
+            (!q) || ((u.userName || '').toLowerCase().includes(q)) || ((u.email || '').toLowerCase().includes(q))
+        );
+        const total = filtered.length;
+        const pages = Math.max(1, Math.ceil(total / pageSize));
+        currentPage = Math.min(currentPage, pages);
+        const start = (currentPage - 1) * pageSize;
+        const pageItems = filtered.slice(start, start + pageSize);
+        renderRows(pageItems);
+        pageInfo.textContent = `${currentPage} / ${pages} (toplam ${total})`;
+        prevBtn.disabled = currentPage <= 1;
+        nextBtn.disabled = currentPage >= pages;
+    }
+
+    function renderRows(users) {
+        tableBody.innerHTML = "";
+        if (!users.length) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-muted">Kayıt bulunamadı.</td></tr>`;
+            return;
+        }
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            const roleBadges = (u.roles || []).map(r => `<span class="badge bg-secondary me-1">${r}</span>`).join(' ');
+            const userName = (u.userName || "").trim();
+            const email    = (u.email || "").trim();
+            tr.innerHTML = `
+                <td>${userName || '(isimsiz)'}</td>
+                <td>${email || '(e-posta yok)'}</td>
+                <td>${roleBadges}</td>
+                <td>
+                    <button type="button"
+                            class="btn btn-sm btn-outline-primary edit-btn"
+                            data-id="${u.id}"
+                            data-name="${userName || email}">
+                        Düzenle
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+
+    // Delegasyon: yeniden render sonrası da çalışır
+    tableBody.addEventListener('click', async function (e) {
+        const btn = e.target.closest('.edit-btn');
+        if (!btn) return;
+        await openEdit(btn.dataset.id, btn.dataset.name);
+    });
+
+    async function openEdit(userId, userName) {
+        modalUserName.textContent = userName || '';
+        modalUserId.value = userId || '';
+        rolesChecklist.innerHTML = "";
+
+        const user = allUsers.find(x => x.id === userId);
+        const userRoles = user ? (user.roles || []) : [];
+
+        // Checkbox’ları üret ve kullanıcının rollerini işaretle
+        rolesChecklist.innerHTML = roles.map(r => {
+            const id = `role_${r}`;
+            const checked = userRoles.includes(r) ? 'checked' : '';
+            return `
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="${r}" id="${id}" name="roles" ${checked}>
+                    <label class="form-check-label" for="${id}">${r}</label>
+                </div>
+            `;
+        }).join('');
+
+        rolesMessage.textContent = "";
+        modal.show();
+    }
+
+    async function getAntiForgeryToken() {
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        return tokenInput ? tokenInput.value : '';
+    }
+
+    rolesForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        rolesMessage.textContent = "";
+
+        const formData = new FormData();
+        formData.append('userId', modalUserId.value);
+        document.querySelectorAll('#rolesChecklist input[name="roles"]:checked').forEach(ch => {
+            formData.append('roles', ch.value);
+        });
+
+        const token = await getAntiForgeryToken();
+
+        try {
+            const res = await fetch('/Admin/Users/UpdateRoles', {
+                method: 'POST',
+                headers: token ? { 'RequestVerificationToken': token } : {},
+                body: formData
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                rolesMessage.textContent = 'Kaydetme başarısız: ' + (text || res.statusText);
+                return;
+            }
+
+            modal.hide();
+            await refreshData();
+        } catch (err) {
+            rolesMessage.textContent = 'Sunucu hatası: ' + err.message;
+        }
+    });
+
+    userSearch.addEventListener('input', function () { currentPage = 1; filterAndPage(); });
+    prevBtn.addEventListener('click', function () { if (currentPage > 1) { currentPage--; filterAndPage(); } });
+    nextBtn.addEventListener('click', function () { currentPage++; filterAndPage(); });
+
+    async function refreshData() {
+        try {
+            await Promise.all([fetchRoles(), fetchUsers()]);
+            currentPage = 1;
+            filterAndPage();
+        } catch (err) {
+            tableBody.innerHTML = `<tr><td colspan="4" class="text-danger">Hata: ${err.message}</td></tr>`;
+        }
+    }
+
+    // initial load
+    await refreshData();
+})();
+</script>
+}

@@ -1,0 +1,31 @@
+@using Microsoft.AspNetCore.Identity
+
+@using WebUI.Models
+@inject UserManager<WebUI.Models.ApplicationUser> UserManager
+@inject SignInManager<WebUI.Models.ApplicationUser> SignInManager
+
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item">
+        <a class="nav-link text-light" asp-area="" asp-controller="Manage" asp-action="Index" title="Manage">
+            Merhaba @UserManager.GetUserName(User)!
+        </a>
+    </li>
+    <li class="nav-item">
+        <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+            <button type="submit" class="nav-link btn btn-link text-light">Çıkış Yap</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-light" asp-controller="Account" asp-action="Login">Giriş Yap</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-light" asp-controller="Account" asp-action="Register">Kayıt Ol</a>
+    </li>
+}
+</ul>

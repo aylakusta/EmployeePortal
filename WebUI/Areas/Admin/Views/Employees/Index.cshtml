@@ -1,0 +1,342 @@
+@using WebUI.Models
+@model IEnumerable<Employee>
+
+@{
+    ViewData["Title"] = "Personeller";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success"><i class="bi bi-check2-circle"></i> @TempData["Success"]</div>
+}
+@if (TempData["Warn"] != null)
+{
+    <div class="alert alert-warning"><i class="bi bi-exclamation-triangle"></i> @TempData["Warn"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger"><i class="bi bi-x-octagon"></i> @TempData["Error"]</div>
+}
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="d-flex gap-2">
+      <a asp-area="Admin" asp-controller="Employees" asp-action="Create" class="btn btn-success" title="Yeni personel ekle">
+        <i class="bi bi-person-plus"></i> <span class="d-none d-md-inline">Yeni Personel</span>
+      </a>
+      <a asp-area="Admin" asp-controller="BulkUpload" asp-action="Index" class="btn btn-secondary" title="CSV/XLSX ile toplu personel ekle">
+        <i class="bi bi-people"></i> <span class="d-none d-md-inline">Toplu Ekle</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- TOPLU SİLME FORMU -->
+    <form id="bulkForm" method="post" asp-area="Admin" asp-controller="Employees" asp-action="BulkDelete">
+      @Html.AntiForgeryToken()
+
+      <div class="table-responsive">
+        <table class="table table-sm align-middle" id="employeesTable">
+          <thead>
+            <tr>
+              <th style="width:32px;">
+                <input class="form-check-input" type="checkbox" id="sel_all_emp_hdr"
+                       onclick="document.querySelectorAll('.sel-emp').forEach(cb=>cb.checked=this.checked)">
+              </th>
+              <th>Ad Soyad</th>
+              <th>E-posta</th>
+              <th>Departman</th>
+              <th style="min-width:180px;">Yetki</th>
+              <th>Kategori</th>
+              <th class="text-end">İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+          @if (Model != null && Model.Any())
+          {
+              foreach (var e in Model.OrderBy(x => x.FirstName).ThenBy(x => x.LastName))
+              {
+                  var fullName = $"{e.FirstName} {e.LastName}";
+                  <tr data-user-id="@e.UserId">
+                    <td>
+                      <!-- DİKKAT: name=ids -> controller BulkDelete ile uyumlu -->
+                      <input type="checkbox" class="form-check-input sel-emp" name="ids" value="@e.Id" />
+                    </td>
+                    <td>@fullName</td>
+                    <td>@e.Email</td>
+                    <td>@e.Department</td>
+                    <td><span class="role-badges text-nowrap"></span></td>
+                    <td>@e.Category</td>
+                    <td class="text-end">
+                      <a asp-area="Admin" asp-controller="Employees" asp-action="Edit" asp-route-id="@e.Id"
+                         class="btn btn-outline-primary btn-sm" title="Düzenle">
+                        <i class="bi bi-pencil"></i> <span class="d-none d-md-inline">Düzenle</span>
+                      </a>
+
+                      <!-- TEKLİ SİL: modal açar -->
+                      <button type="button"
+                              class="btn btn-outline-danger btn-sm btn-delete-one"
+                              data-id="@e.Id"
+                              data-name="@fullName"
+                              title="Sil">
+                        <i class="bi bi-trash"></i> <span class="d-none d-md-inline">Sil</span>
+                      </button>
+
+                      <!-- Parola sıfırlama (ilerleyen adımda tamamlayacağız, şimdilik link kalsın) -->
+                      <a asp-area="Admin" asp-controller="Employees" asp-action="ResetPassword" asp-route-id="@e.Id"
+                         class="btn btn-outline-info btn-sm" title="Parola sıfırla">
+                        <i class="bi bi-key"></i> <span class="d-none d-md-inline">Parola</span>
+                      </a>
+
+                      <!-- ROL DÜZENLE: ikon düzeltildi (bi bi-person-gear) + açıklama metni -->
+                      <button type="button"
+                              class="btn btn-outline-dark btn-sm edit-role-btn"
+                              data-user-id="@e.UserId"
+                              data-user-name="@fullName"
+                              title="Rolleri düzenle">
+                        <i class="bi bi-person-gear"></i> <span class="d-none d-md-inline">Roller</span>
+                      </button>
+                    </td>
+                  </tr>
+              }
+          }
+          else
+          {
+              <tr><td colspan="7" class="text-muted">Kayıt bulunamadı.</td></tr>
+          }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mt-2">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="sel_all_emp"
+                 onclick="document.querySelectorAll('.sel-emp').forEach(cb=>cb.checked=this.checked)">
+          <label class="form-check-label" for="sel_all_emp">Tümünü Seç</label>
+        </div>
+
+        <!-- TOPLU SİL: modal ile onay -->
+        <button type="button" id="btnBulkDelete" class="btn btn-danger" title="Seçili personelleri sil">
+          <i class="bi bi-person-x"></i> <span class="d-none d-md-inline">Seçili Sil</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TEKLİ SİL ONAY MODALI -->
+<div class="modal fade" id="confirmDeleteOneModal" tabindex="-1" aria-labelledby="confirmDeleteOneLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="confirmDeleteOneLabel" class="modal-title">Silme Onayı</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong id="one-name"></strong> silinsin mi?</p>
+      </div>
+      <div class="modal-footer">
+        <form id="deleteOneForm" method="post" asp-area="Admin" asp-controller="Employees" asp-action="Delete">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="one-id" />
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+            <button type="submit" class="btn btn-danger">Evet, Sil</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPLU SİL ONAY MODALI -->
+<div class="modal fade" id="confirmBulkDeleteModal" tabindex="-1" aria-labelledby="confirmBulkDeleteLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="confirmBulkDeleteLabel" class="modal-title">Toplu Silme Onayı</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+      </div>
+      <div class="modal-body">
+        <p><span id="bulk-count">0</span> personel silinecek. Devam etmek istiyor musunuz?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Vazgeç</button>
+        <button type="button" id="confirmBulkDeleteBtn" class="btn btn-danger">Evet, Sil</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROL DÜZENLEME MODALI (mevcut akışın korunur) -->
+<div class="modal fade" id="rolesModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="rolesForm">
+      @Html.AntiForgeryToken()
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Rolleri Düzenle - <span id="modalUserName"></span></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="modalUserId" name="userId" />
+          <div id="rolesChecklist" class="mb-3"></div>
+          <div id="rolesMessage" class="text-danger"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+          <button type="submit" class="btn btn-primary">Kaydet</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+(function(){
+  // ========== ROL MODALI MEVCUT AKIŞ ==========
+  const tbody = document.querySelector('#employeesTable tbody');
+  const modalEl = document.getElementById('rolesModal');
+  const modal = new bootstrap.Modal(modalEl);
+  const rolesChecklist = document.getElementById('rolesChecklist');
+  const modalUserName = document.getElementById('modalUserName');
+  const modalUserId = document.getElementById('modalUserId');
+  const rolesForm = document.getElementById('rolesForm');
+  const rolesMessage = document.getElementById('rolesMessage');
+
+  let allUsers = [];
+  let allRoles = [];
+
+  async function getJson(url){
+    const res = await fetch(url);
+    if(!res.ok) throw new Error(url + " yüklenemedi");
+    return res.json();
+  }
+
+  async function loadUsersAndRoles(){
+    [allRoles, allUsers] = await Promise.all([
+      getJson('/Admin/Users/Roles'),
+      getJson('/Admin/Users/List')
+    ]);
+  }
+
+  function renderRoleBadgesForRow(tr){
+    const userId = tr.getAttribute('data-user-id');
+    const host = tr.querySelector('.role-badges');
+    if(!host){ return; }
+    const user = (allUsers || []).find(u => u.id === userId);
+    const roles = user?.roles || [];
+    if(!roles.length){ host.innerHTML = '<span class="text-muted">(yok)</span>'; return; }
+    host.innerHTML = roles.map(r => `<span class="badge bg-secondary me-1">${r}</span>`).join(' ');
+  }
+
+  function renderAllRoleBadges(){
+    tbody.querySelectorAll('tr[data-user-id]').forEach(renderRoleBadgesForRow);
+  }
+
+  function buildChecklist(userRoles){
+    rolesChecklist.innerHTML = (allRoles || []).map(r => {
+      const id = 'role_' + r;
+      const checked = (userRoles || []).includes(r) ? 'checked' : '';
+      return '<div class="form-check">'
+           + `<input class="form-check-input" type="checkbox" value="${r}" id="${id}" name="roles" ${checked}>`
+           + `<label class="form-check-label" for="${id}">${r}</label>`
+           + '</div>';
+    }).join('');
+  }
+
+  tbody.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.edit-role-btn');
+    if(!btn) return;
+    const userId = btn.dataset.userId || '';
+    const userName = btn.dataset.userName || '';
+    const user = (allUsers || []).find(u => u.id === userId);
+    const userRoles = user?.roles || [];
+
+    modalUserName.textContent = userName;
+    modalUserId.value = userId;
+    buildChecklist(userRoles);
+    rolesMessage.textContent = '';
+    modal.show();
+  });
+
+  rolesForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    rolesMessage.textContent = '';
+    const tokenEl = rolesForm.querySelector('input[name="__RequestVerificationToken"]');
+    const token = tokenEl ? tokenEl.value : '';
+
+    const formData = new FormData();
+    formData.append('userId', modalUserId.value);
+    rolesChecklist.querySelectorAll('input[name="roles"]:checked').forEach(ch => {
+      formData.append('roles', ch.value);
+    });
+
+    try{
+      const res = await fetch('/Admin/Users/UpdateRoles', {
+        method: 'POST',
+        headers: token ? { 'RequestVerificationToken': token } : {},
+        body: formData
+      });
+      if(!res.ok){
+        const text = await res.text();
+        rolesMessage.textContent = 'Kaydetme başarısız: ' + (text || res.statusText);
+        return;
+      }
+      allUsers = await getJson('/Admin/Users/List');
+      const tr = tbody.querySelector(`tr[data-user-id="${modalUserId.value}"]`);
+      if(tr) renderRoleBadgesForRow(tr);
+      bootstrap.Modal.getInstance(document.getElementById('rolesModal'))?.hide();
+    }catch(err){
+      rolesMessage.textContent = 'Sunucu hatası: ' + err.message;
+    }
+  });
+
+  (async function init(){
+    try{
+      await loadUsersAndRoles();
+      renderAllRoleBadges();
+    }catch(err){
+      console.error(err);
+      tbody.querySelectorAll('.role-badges').forEach(el => el.innerHTML = '<span class="text-danger">Roller alınamadı</span>');
+    }
+  })();
+
+  // ========== SİLME MODALLARI ==========
+  // Tekli silme
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-delete-one');
+    if (!btn) return;
+
+    const id = btn.getAttribute('data-id');
+    const name = btn.getAttribute('data-name') || '';
+    document.getElementById('one-id').value = id;
+    document.getElementById('one-name').textContent = name;
+
+    const mdl = new bootstrap.Modal(document.getElementById('confirmDeleteOneModal'));
+    mdl.show();
+  });
+
+  // Toplu silme
+  const btnBulk = document.getElementById('btnBulkDelete');
+  if (btnBulk) {
+    btnBulk.addEventListener('click', function () {
+      const selected = Array.from(document.querySelectorAll('.sel-emp:checked')).map(ch => ch.value);
+      if (selected.length === 0) {
+        alert('Silmek için en az bir personel seçiniz.');
+        return;
+      }
+      document.getElementById('bulk-count').textContent = selected.length;
+      const mdl = new bootstrap.Modal(document.getElementById('confirmBulkDeleteModal'));
+      mdl.show();
+    });
+  }
+
+  const confirmBulkBtn = document.getElementById('confirmBulkDeleteBtn');
+  if (confirmBulkBtn) {
+    confirmBulkBtn.addEventListener('click', function () {
+      document.getElementById('bulkForm').submit();
+    });
+  }
+})();
+</script>
+}

@@ -1,0 +1,120 @@
+﻿@model WebUI.Models.Employee
+@{
+  ViewData["Title"] = "Yeni Personel";
+}
+<form asp-action="Create" method="post" class="row g-3">
+  @Html.AntiForgeryToken()
+
+  <div class="col-md-6">
+    <label asp-for="FirstName">Adı</label>
+    <input asp-for="FirstName" class="form-control" />
+    <span asp-validation-for="FirstName" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="LastName">Soyadı</label>
+    <input asp-for="LastName" class="form-control" />
+    <span asp-validation-for="LastName" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="JobTitleId">Unvan</label>
+    <select asp-for="JobTitleId" asp-items="ViewBag.JobTitleId" class="form-select">
+      <option value="">-- (Seçiniz) --</option>
+    </select>
+    <span asp-validation-for="JobTitleId" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="DepartmentId">Departman</label>
+    <select asp-for="DepartmentId" asp-items="ViewBag.DepartmentId" class="form-select">
+      <option value="">-- Seçiniz --</option>
+    </select>
+    <span asp-validation-for="DepartmentId" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="SupervisorId">Bağlı Yönetici</label>
+    <select asp-for="SupervisorId" asp-items="ViewBag.Supervisors" class="form-select" id="SupervisorId">
+      <option value="">-- Seçiniz --</option>
+    </select>
+    <span asp-validation-for="SupervisorId" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="Category">Kategori</label>
+    <select asp-for="Category" class="form-select"
+            asp-items="Html.GetEnumSelectList<WebUI.Models.Employee.EmployeeCategory>()" id="Category"></select>
+    <span asp-validation-for="Category" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label" style="font-size: 20px;">Taşıma</label>
+    <div>
+      <input asp-for="UsesTransport" class="form-check-input" id="usesTransportCb" />
+      <label class="form-check-label" for="usesTransportCb">Servis kullanacak</label>
+
+      <input asp-for="HasCompanyCar" class="form-check-input ms-3" id="companyCarCb" />
+      <label class="form-check-label" for="companyCarCb">Şirket aracı</label>
+    </div>
+  </div>
+
+    <div class="col-md-6" id="defaultShiftWrap" style="display:none">
+    <label asp-for="DefaultShift" class="form-label">Varsayılan vardiya (Mavi yaka)</label>
+    <select asp-for="DefaultShift" class="form-select" id="defaultShift">
+      <option value="">(Seçiniz)</option>
+      <option value="1">00:00 - 08:00</option>
+      <option value="2">08:00 - 16:00</option>
+      <option value="3">16:00 - 00:00</option>
+    </select>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="Email">E-posta</label>
+    <input asp-for="Email" class="form-control" />
+    <span asp-validation-for="Email" class="text-danger"></span>
+  </div>
+
+  <div class="col-md-6">
+    <label asp-for="HireDate">İşe giriş tarihi</label>
+    <input asp-for="HireDate" type="date" class="form-control" />
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-success">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Geri</a>
+  </div>
+</form>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    (function () {
+      const ddl = document.getElementById("Category");
+      const uses = document.getElementById("usesTransportCb");
+      const car  = document.getElementById("companyCarCb");
+      const shiftWrap = document.getElementById("defaultShiftWrap");
+
+      function apply() {
+        const isWhite = ddl.value === "1";
+        const isBlue  = ddl.value === "2";
+
+        shiftWrap.style.display = isBlue ? "" : "none";
+
+        if (isWhite && car && car.checked) {
+          uses.checked = false;
+          uses.setAttribute("disabled", "disabled");
+        } else {
+          uses.removeAttribute("disabled");
+        }
+
+        if (isBlue && car) {
+          car.checked = false;
+        }
+      }
+      ddl.addEventListener("change", apply);
+      if (car) car.addEventListener("change", apply);
+      apply();
+    })();
+  </script>
+}

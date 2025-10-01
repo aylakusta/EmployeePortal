@@ -1,0 +1,128 @@
+﻿@model WebUI.Models.Settings.SmtpSettings
+@{
+    ViewData["Title"] = "Sistem Ayarları";
+}
+
+
+
+<div class="container">
+  @if (TempData["Success"] is string successMessage)
+  {
+    <div class="alert alert-success" role="alert">@successMessage</div>
+  }
+  @if (TempData["Error"] is string errorMessage)
+  {
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+  }
+
+  <div class="row justify-content-center">
+    <div class="col-xl-8">
+
+    <section class="settings-hero py-4 py-lg-5 mb-4 text-white">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col">
+            <h1 class="display-6 fw-semibold mb-3">Bildirim ve SMTP Ayarları</h1>
+            <p class="lead mb-0">E-posta sunucusu bilgilerini güncelleyin, bilgilendirme adreslerini yönetin ve değişikliklerin anında devreye girmesini sağlayın.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+      <div class="card shadow-lg border-0 overflow-hidden mb-4">
+        <div class="card-header bg-white py-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h2 class="h4 mb-1">SMTP Sunucu Bilgileri</h2>
+              <p class="text-muted mb-0">Geçerli değerleri güncelleyin ve "Kaydet" butonuna basın.</p>
+            </div>
+            <div>
+              <span class="badge bg-primary-subtle text-primary">Değişiklikler anında geçerli olur</span>
+          </div>
+        </div>
+        <div class="card-body p-4 p-lg-5">
+          <form asp-action="Index" method="post" class="row g-4">
+            @Html.AntiForgeryToken()
+
+            <div class="col-md-6">
+              <label asp-for="Host" class="form-label">Sunucu Adı</label>
+              <input asp-for="Host" class="form-control" />
+              <span asp-validation-for="Host" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3">
+              <label asp-for="Port" class="form-label">Port</label>
+              <input asp-for="Port" class="form-control" />
+              <span asp-validation-for="Port" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+              <div class="form-check form-switch">
+                <input asp-for="EnableSsl" class="form-check-input" />
+                <label asp-for="EnableSsl" class="form-check-label">SSL kullan</label>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label asp-for="User" class="form-label">Kullanıcı Adı</label>
+              <input asp-for="User" class="form-control" />
+            </div>
+
+            <div class="col-md-6">
+              <label asp-for="Password" class="form-label">Parola</label>
+              <input asp-for="Password" class="form-control" type="password" autocomplete="new-password" />
+              <div class="form-text">Boş bırakırsanız mevcut parola korunur.</div>
+            </div>
+
+            <div class="col-md-6">
+              <label asp-for="From" class="form-label">Gönderen Adresi</label>
+              <input asp-for="From" class="form-control" />
+            </div>
+
+            <div class="col-md-6">
+              <label asp-for="AdminEmails" class="form-label">Bilgilendirilecek E-postalar</label>
+              <textarea asp-for="AdminEmails" class="form-control" rows="4" placeholder="ornek@firma.com&#10;info@firma.com"></textarea>
+              <div class="form-text">Her satıra bir adres veya virgülle ayırabilirsiniz.</div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end gap-3">
+              <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">Vazgeç</a>
+              <button class="btn btn-primary px-4">Kaydet</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white">
+          <h2 class="h5 mb-0">Test E-postası Gönder</h2>
+        </div>
+        <div class="card-body">
+          <form asp-action="SendTestMail" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <div class="col-md-8">
+              <input type="email" class="form-control" id="testEmail" name="testEmail" placeholder="sample@example.com" required />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+              <button class="btn btn-outline-primary w-100">Test maili gönder</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+}
+
+<style>
+  .settings-hero {
+    background: radial-gradient(circle at top left, #1f7ae0, #0d355a);
+  }
+  .bg-primary-subtle {
+    background-color: rgba(31, 122, 224, 0.12);
+  }
+</style>

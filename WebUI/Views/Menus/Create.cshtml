@@ -1,0 +1,25 @@
+@model WebUI.Models.Menu
+@{
+    ViewData["Title"] = "Create Menu";
+}
+<h2>@ViewData["Title"]</h2>
+<form asp-action="Create" method="post">
+  @Html.AntiForgeryToken()
+  <div class="mb-2">
+    <label asp-for="Name"></label>
+    <input asp-for="Name" class="form-control" />
+  </div>
+  <div class="mb-2">
+    <label asp-for="Url"></label>
+    <input asp-for="Url" class="form-control" />
+  </div>
+  <div class="mb-2">
+    <label asp-for="Order"></label>
+    <input asp-for="Order" type="number" class="form-control" />
+  </div>
+  <div class="mb-2">
+    <label asp-for="Date"></label>
+    <input asp-for="Date" type="date" class="form-control" />
+  </div>
+  <button class="btn btn-success">Save</button>
+</form>

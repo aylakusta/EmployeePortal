@@ -1,0 +1,38 @@
+@model WebUI.Models.Service
+@{
+  ViewData["Title"] = "Servis Sil";
+}
+
+<div class="card shadow-sm">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3 class="mb-0">Servis Sil</h3>
+    <a class="btn btn-secondary btn-sm" asp-action="Services">Geri</a>
+  </div>
+
+  <div class="card-body">
+    <div class="alert alert-warning">
+      Bu servisi silmek istediğinize emin misiniz? Atamalar (aktif/pasif) bu servis ile ilişkiliyse <strong>silinir</strong>.
+    </div>
+
+    <dl class="row">
+      <dt class="col-sm-3">Servis Adı</dt>
+      <dd class="col-sm-9">@Model.Name</dd>
+
+      <dt class="col-sm-3">Plaka</dt>
+      <dd class="col-sm-9">@Model.PlateNumber</dd>
+
+      <dt class="col-sm-3">Güzergâh</dt>
+      <dd class="col-sm-9">@Model.StartPoint → @Model.EndPoint</dd>
+
+      <dt class="col-sm-3">Başlangıç Saati</dt>
+      <dd class="col-sm-9">@Model.StartTime</dd>
+    </dl>
+
+    <form asp-action="Delete" method="post">
+      @Html.AntiForgeryToken()
+      <input type="hidden" asp-for="Id" />
+      <button type="submit" class="btn btn-danger">Evet, Sil</button>
+      <a asp-action="Services" class="btn btn-secondary">Vazgeç</a>
+    </form>
+  </div>
+</div>
